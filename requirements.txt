@@ -1,0 +1,20 @@
+langchain>=0.1.0
+langchain-openai>=0.0.2
+langchain-core>=0.1.0
+python-dotenv>=1.0.0
+openai>=1.0.0
+pydantic>=2.0.0
+langchain-groq>=0.0.1
+langchain-community
+# Note: re, json, datetime, and collections are standard Python libraries
+# and don't need to be in requirements.txt
+# Flask for backend
+flask
+flask-cors
+
+# Streamlit for frontend
+streamlit
+requests
+
+# Optional (for colored CLI output or future enhancements)
+colorama

@@ -1,4 +1,4 @@
-
+import os
 from langchain.memory import ConversationBufferMemory
 from langchain.agents import initialize_agent, AgentType
 from config import llm

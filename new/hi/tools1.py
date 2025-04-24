@@ -101,9 +101,44 @@ def meal_plan_suggestion(input_text: str):
 
     # Step 4: Return to user
     return response_text
+def smart_router(user_id: str, user_message: str):
+    keywords = ["meal", "lunch", "dinner", "snack", "eat", "food", "diet", "vegetarian", "halal", "keto"]
+
+    # Step 1: If keywords are found, try to extract structured info
+    if any(word in user_message.lower() for word in keywords):
+        extract_prompt = f'''
+        From the following user input, extract:
+        - Meal Type (e.g., breakfast, lunch, dinner, snack)
+        - Dietary Preference (e.g., vegetarian, halal, no preference)
+
+        Input: "{user_message}"
+
+        Format your response like:
+        Meal Type: ...
+        Dietary: ...
+        '''
+        parsed = llm.invoke(extract_prompt).content.strip()
+        match = re.search(r"Meal Type: (.+?)\nDietary: (.+)", parsed)
+
+        if match:
+            meal_type = match.group(1).strip()
+            dietary_pref = match.group(2).strip()
+        else:
+            meal_type = "meal"
+            dietary_pref = "no preference"
+
+        formatted_input = f"User ID: {user_id}. Meal Type: {meal_type}. Dietary: {dietary_pref}"
+        return meal_plan_suggestion(formatted_input)
+
+    # Step 2: Fallback to routine tool
+    return talk_with_user(f"User ID: {user_id}. User input: {user_message}")
 
 # Tools list
 TOOLS = [
     Tool(name="track_user_routine", func=talk_with_user, description="Track routines from user input"),
-    Tool(name="meal_plan_suggestion", func=meal_plan_suggestion, description="Suggests a meal plan based on type and dietary preference. Use for ANY food-related requests, even shoeter queries. Think as if you are a chef or a food expert and know all about food. So suggest likewise.")
+    Tool(name="meal_plan_suggestion", func=meal_plan_suggestion, description=
+          "Suggests a meal plan based on user's preferences. "
+        "Use this tool for any food-related query including: "
+        "'I want lunch ideas', 'What's for dinner?', 'Suggest a vegetarian meal', or 'Can you suggest a meal plan?'. "
+        "Trigger if user mentions meals, eating, food, lunch, dinner, breakfast, snacks, halal, vegetarian, keto, etc.")
 ]

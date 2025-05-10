@@ -42,9 +42,12 @@ def talk_with_user(input_text: str):
         return f"Noted your {activity} routine. {suggestion_response.content}"
 
     else:
+        # Analyze sentiment for emotional support
+        sentiment_score, mood = ml_features.analyze_sentiment(user_message)
+        
         memory.save_context(
             {"input": user_message},
-            {"output": f"[CONCERN] {concern_type} | Logged at {datetime.now().isoformat()}"}
+            {"output": f"[CONCERN] {concern_type} | Mood: {mood} | Logged at {datetime.now().isoformat()}"}
         )
         empathy_prompt = f"""User message: "{user_message}". Provide a short, appropriate response for: {concern_type}"""
         return llm.invoke(empathy_prompt).content

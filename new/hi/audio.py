@@ -42,4 +42,8 @@ class SpeechRecognition:
         )[0]
         
         return transcription
+    
+# Export instance so frontend can import it
+speech_recognition = SpeechRecognition()
+
 

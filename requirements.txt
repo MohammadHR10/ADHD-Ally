@@ -19,7 +19,6 @@ requests
 # Optional (for colored CLI output or future enhancements)
 colorama
 
-pyarrow==6.0.0
 
 # Audio and Video Processing
 transformers

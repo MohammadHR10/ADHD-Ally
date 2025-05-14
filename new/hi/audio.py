@@ -25,10 +25,12 @@ class SpeechRecognition:
         
         # Process with Whisper
         input_features = self.processor(
-            audio_array, 
-            sampling_rate=self.sample_rate, 
-            return_tensors="pt"
+        audio_array,
+        sampling_rate=self.sample_rate,
+        return_tensors="pt",
+        language="en"
         ).input_features
+
         
         # Generate transcription
         predicted_ids = self.model.generate(input_features)
@@ -40,4 +42,8 @@ class SpeechRecognition:
         )[0]
         
         return transcription
+    
+# Export instance so frontend can import it
+speech_recognition = SpeechRecognition()
+
 

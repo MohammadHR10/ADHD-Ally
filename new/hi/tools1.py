@@ -99,11 +99,12 @@ def meal_plan_suggestion(input_text: str):
     # Step 3: Save to memory
     memory.save_context(
         {"input": input_text},
-        {"output": f"[MEAL_PLAN] {response_text} | Meal Type: {meal_type}, Dietary: {dietary_preferences}, User: {user_id}, Time: {datetime.now().isoformat()}"}
+        {"output": response_text}
     )
 
-    # Step 4: Return to user
-    return response_text
+    # Step 4: Return as string only
+    return response_text  # ✅ This avoids LangChain validation errors
+
 def smart_router(user_id: str, user_message: str):
     keywords = ["meal", "lunch", "dinner", "snack", "eat", "food", "diet", "vegetarian", "halal", "keto"]
 

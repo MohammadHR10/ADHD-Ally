@@ -2,12 +2,16 @@ import os
 from langchain.memory import ConversationBufferMemory
 from langchain.agents import initialize_agent, AgentType
 from config import llm
-from tools1 import TOOLS  # tools from Option 1 (manual input parsing)
+from tools1 import TOOLS
+from audio import SpeechRecognition
 
-# Memory (will show a deprecation warning, but still functional)
+# Load memory
 memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
 
-# Agent initialized with legacy ReAct type
+# Initialize Whisper model
+speech_rec = SpeechRecognition()
+
+# Initialize LangChain agent with your custom tools
 agent = initialize_agent(
     tools=TOOLS,
     llm=llm,
@@ -17,33 +21,52 @@ agent = initialize_agent(
 )
 
 def main():
-    print("🧠 ADHD AI Assistant: Hello! I'm here to help you manage your tasks and daily life.")
-    print("Type 'exit' to end the conversation.")
-    
+    print("🧠 ADHD AI Assistant (Type or Speak)")
+    print("Say 'exit' anytime to quit.")
+
     user_id = "default_user"
 
     while True:
         try:
-            user_input = input("\nYou: ").strip()
-            if user_input.lower() in ['exit', 'quit', 'bye']:
-                print("\n🧠 AI: Take care! Remember to break down tasks into small steps. You've got this! 💪")
+            mode = input("\nChoose input method — [T]ype / [S]peak: ").strip().lower()
+
+            if mode in ['exit', 'quit', 'bye']:
+                print("\n🧠 AI: Take care! You're doing great. 👋")
                 break
+
+            if mode == 's':
+                print("🎤 Listening...")
+                user_input = speech_rec.record_and_transcribe().strip()
+                print(f"🗣️ You said: {user_input}")
+            elif mode == 't':
+                user_input = input("You: ").strip()
+            else:
+                print("❌ Invalid input. Choose 'T' or 'S'.")
+                continue
 
             if not user_input:
                 continue
 
-            # Pack user_id and input into a single string
-            context_string = f"User ID: {user_id}. User input: {user_input}"
-            response = agent.run(context_string)
+            # Use agent.invoke instead of deprecated agent.run
+            response = agent.invoke({"input": user_input})
+            
+            # Extract the response content - this is the key fix
+            ai_response = response.get("output", "I'm not sure how to respond to that.")
+            
+            # Save to memory (optional if agent already tracks this)
+            memory.save_context({"input": user_input}, {"output": ai_response})
 
-            memory.save_context({"input": user_input}, {"output": response})
-            print(f"\n🧠 AI: {response}")
+            print(f"\n🧠 AI: {ai_response}")
 
         except KeyboardInterrupt:
-            print("\n\n🧠 AI: Goodbye! Stay focused and take it one step at a time! 🌟")
+            print("\n\n🧠 AI: Interrupted. Take a deep breath. 🌿")
             break
         except Exception as e:
-            print(f"\n🧠 AI: I apologize, but I encountered an error: {str(e)}")
+            print(f"\n❌ Error: {str(e)}")
+            print(f"Error type: {type(e)}")
+            # Add more debugging information
+            import traceback
+            traceback.print_exc()
 
 if __name__ == "__main__":
     main()

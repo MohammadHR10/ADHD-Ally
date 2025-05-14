@@ -10,7 +10,7 @@ memory = ConversationBufferMemory(memory_key="chat_history", return_messages=Tru
 # Initialize the LLM with Groq
 llm = ChatGroq(
     api_key=groq_api_key,
-    model_name="llama3-8b-8192",  # You can also use "llama2-70b-4096" or other Llama models
+    model_name="llama3-70b-8192",  # You can also use "llama2-70b-4096" or other Llama models
     temperature=0.7,
     max_tokens=512
 )

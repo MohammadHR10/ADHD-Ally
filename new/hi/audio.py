@@ -18,7 +18,7 @@ class SpeechRecognition:
                         samplerate=self.sample_rate, 
                         channels=1)
         sd.wait()
-        print("Processing...")
+        #print("Processing...")
         
         # Convert to format expected by Whisper
         audio_array = recording.flatten()
@@ -41,14 +41,3 @@ class SpeechRecognition:
         
         return transcription
 
-def main():
-    speech_rec = SpeechRecognition()
-    while True:
-        input("Press Enter to start recording (5 seconds)...")
-        text = speech_rec.record_and_transcribe()
-        print(f"Transcription: {text}")
-        if input("Continue? (y/n): ").lower() != 'y':
-            break
-
-if __name__ == "__main__":
-    main()

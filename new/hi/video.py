@@ -1,52 +1,68 @@
 import cv2
+import requests
 import time
-from deepface import DeepFace
 
-def test_camera():
-    print("Testing the camera...")
-    print("Please make sure you've granted camera permissions to your terminal/IDE")
-    print("System Preferences -> Security & Privacy -> Camera")
-    
-    # Try to open the camera
+def capture_image(filename="frame.jpg"):
+    print("Starting webcam...")
     cap = cv2.VideoCapture(0)
     
-    # Wait a moment for camera initialization
-    time.sleep(2)
-    
     if not cap.isOpened():
-        print("\nError: Camera couldn't open")
-        print("Possible reasons:")
-        print("1. Camera permissions not granted")
-        print("2. Camera is in use by another application")
-        print("3. Camera hardware issue")
-        return False
+        raise Exception("❌ Could not open webcam.")
     
-    print("\nCamera opened successfully")
+    print("📷 Align your face and wait...")
+    time.sleep(2)  # Let the camera adjust
     
-    # Try to read a frame
+    # Capture a single frame
     ret, frame = cap.read()
-    if not ret:
-        print("\nError: Could not capture frame")
-        print("Please check if another application is using the camera")
-        cap.release()
-        return False
-    
-    print("\nFrame captured successfully")
-    print(f"Frame dimensions: {frame.shape}")
-    
-    # Release the camera
     cap.release()
+    
+    if not ret:
+        raise Exception("❌ Failed to capture image.")
+    
+    # Show preview for 2 seconds
+    cv2.imshow("📷 Captured Image (close to continue)", frame)
+    cv2.waitKey(2000)
     cv2.destroyAllWindows()
-    return True
+    
+    # Save frame
+    cv2.imwrite(filename, frame)
+    print("✅ Image saved:", filename)
+    return filename
+
+def analyze_emotion(image_path, api_key, api_secret):
+    url = "https://api-us.faceplusplus.com/facepp/v3/detect"
+    
+    payload = {
+        'api_key': api_key,
+        'api_secret': api_secret,
+        'return_attributes': 'emotion'
+    }
+    
+    files = {'image_file': open(image_path, 'rb')}
+    
+    print("📡 Sending image to Face++ API...")
+    response = requests.post(url, data=payload, files=files)
+    result = response.json()
+    
+    # Debug output
+    print("🔍 API response:", result)
+
+    if 'faces' not in result or len(result['faces']) == 0:
+        return "No face detected"
+
+    emotion_data = result['faces'][0]['attributes']['emotion']
+    top_emotion = max(emotion_data, key=emotion_data.get)
+    
+    return top_emotion
 
 if __name__ == "__main__":
-    print("Starting camera test...")
-    success = test_camera()
-    if success:
-        print("\nCamera test completed successfully!")
-    else:
-        print("\nCamera test failed!")
-        print("Please check the error messages above for troubleshooting steps.")
-        
-        
-    
+    # 🛠️ Replace with your actual Face++ API keys
+    API_KEY = "your_faceplusplus_api_key"
+    API_SECRET = "your_faceplusplus_api_secret"
+
+    try:
+        image_file = capture_image()
+        emotion = analyze_emotion(image_file, API_KEY, API_SECRET)
+        print("🎭 Detected Emotion:", emotion)
+    except Exception as e:
+        print("❌ Error:", str(e))
